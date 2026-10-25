@@ -10,7 +10,7 @@
 
 var PH = "919962833203";
 var EM = "uaas.india@gmail.com";
-var UAAS_API_BASE = "http://localhost:5028"; // local development only
+var UAAS_API_BASE = "https://uaas-api.onrender.com"; // local development only
 
 
 /* =========================================================
