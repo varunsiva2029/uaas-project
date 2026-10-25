@@ -12,11 +12,12 @@ builder.Services.AddHttpClient("Supabase", client =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("UaasFrontend", policy =>
-        policy.WithOrigins(
-                "http://127.0.0.1:5500",
-                "http://localhost:5500")
-              .AllowAnyHeader()
-              .AllowAnyMethod());
+       policy.WithOrigins(
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+    "https://uaas-website.onrender.com")
+  .AllowAnyHeader()
+  .AllowAnyMethod());
 });
 
 var app = builder.Build();
