@@ -1,0 +1,13 @@
+# .NET build files
+**/bin/
+**/obj/
+.vs/
+
+# Local configuration and credentials
+**/appsettings.Development.json
+UAAS.Api/appsettings.json
+**/.env
+**/.env.*
+
+# Git
+.git/

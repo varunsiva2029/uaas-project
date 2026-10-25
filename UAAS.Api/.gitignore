@@ -1,0 +1,10 @@
+# Build output
+bin/
+obj/
+.vs/
+
+# Local configuration and credentials
+appsettings.json
+appsettings.Development.json
+.env
+.env.*

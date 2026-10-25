@@ -1,0 +1,32 @@
+/* UAAS Engineering Desk - Log Book add-on styles */
+.logbook-shell { margin-top: 1.5rem; }
+.logbook-intro { color: var(--muted, #aebbd0); margin: .4rem 0 1.25rem; }
+.logbook-card { min-width: 0; margin: 1.1rem 0 1.5rem; padding: 1.2rem; background: var(--card, #101d31); border: 1px solid var(--line, #263752); border-radius: 4px; }
+.logbook-card h3 { margin: 0 0 1rem; }
+.logbook-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.logbook-field { display: flex; flex-direction: column; gap: .45rem; min-width: 0; }
+.logbook-field > span { font-size: .78rem; font-weight: 700; letter-spacing: .045em; color: var(--muted, #aebbd0); }
+.logbook-field input, .logbook-field textarea { width: 100%; min-width: 0; box-sizing: border-box; }
+.logbook-field textarea { resize: vertical; }
+.logbook-actions, .logbook-records-header { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; margin-top: 1rem; }
+.logbook-records-header { margin-top: 0; }
+.logbook-records-header h3 { margin: 0; }
+.logbook-search { display: block; width: 100%; box-sizing: border-box; margin: 1rem 0; }
+.logbook-table-wrap { width: 100%; overflow: auto; border: 1px solid var(--line, #263752); border-radius: 3px; }
+.logbook-table { width: 100%; min-width: 1250px; border-collapse: collapse; font-size: .88rem; }
+.logbook-table th, .logbook-table td { padding: .8rem .75rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line, #263752); }
+.logbook-table th { position: sticky; top: 0; z-index: 1; background: var(--navy, #11263f); color: #fff; font-size: .75rem; white-space: nowrap; letter-spacing: .035em; }
+.logbook-table td { overflow-wrap: anywhere; max-width: 260px; }
+.logbook-table tbody tr:nth-child(even) { background: rgba(255,255,255,.025); }
+.logbook-table tbody tr:last-child td { border-bottom: 0; }
+.logbook-empty { text-align: center !important; padding: 2rem !important; color: var(--muted, #aebbd0); }
+.logbook-message { margin: .75rem 0 0; color: var(--muted, #aebbd0); overflow-wrap: anywhere; }
+@media (max-width: 900px) { .logbook-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .logbook-fields { grid-template-columns: 1fr; } .logbook-card { padding: .85rem; } }
+
+/* Log Book edit/delete actions */
+.logbook-action-heading { min-width: 150px; }
+.logbook-action-cell { white-space: nowrap; min-width: 150px; }
+.logbook-action-cell .btn { margin: .15rem .25rem .15rem 0; }
+.logbook-action-cell button:disabled { opacity: .55; cursor: wait; }
+.logbook-cancel-edit[hidden] { display: none !important; }
