@@ -19,7 +19,7 @@
     ["COURIER COMPANY", "courier_company"],
     ["COURIER TRACKING / AWB NO.", "courier_tracking_number"],
     ["COURIER DISPATCH DATE", "courier_dispatch_date"],
-    ["COURIER STATUS", "courier_status"]
+    ["STATUS", "courier_status"]
   ];
 
   function node(tag, className, text) {
@@ -152,7 +152,7 @@
     var courierCompany = addField(fields, "COURIER COMPANY", "courierCompany", "text", { placeholder: "Courier service name" });
     var courierTrackingNumber = addField(fields, "COURIER TRACKING / AWB NO.", "courierTrackingNumber", "text", { placeholder: "Tracking or AWB number" });
     var courierDispatchDate = addField(fields, "COURIER DISPATCH DATE", "courierDispatchDate", "date", {});
-    var courierStatus = addField(fields, "COURIER STATUS", "courierStatus", "text", { placeholder: "e.g. Pending, Dispatched, Delivered" });
+    var courierStatus = addField(fields, "STATUS", "courierStatus", "text", { placeholder: "e.g. Pending, Dispatched, Delivered" });
 
     form.appendChild(fields);
     var formActions = node("div", "logbook-actions");

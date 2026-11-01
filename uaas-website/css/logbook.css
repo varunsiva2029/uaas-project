@@ -30,3 +30,18 @@
 .logbook-action-cell .btn { margin: .15rem .25rem .15rem 0; }
 .logbook-action-cell button:disabled { opacity: .55; cursor: wait; }
 .logbook-cancel-edit[hidden] { display: none !important; }
+
+
+/* Improve STATUS column readability */
+.logbook-table th:last-child,
+.logbook-table td:last-child {
+    min-width: 130px;
+    white-space: nowrap;
+}
+
+/* Keep STATUS values on a single line */
+.logbook-table th:nth-last-child(2),
+.logbook-table td:nth-last-child(2) {
+    min-width: 145px;
+    white-space: nowrap;
+}
