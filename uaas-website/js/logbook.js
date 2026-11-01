@@ -1,4 +1,4 @@
-/* UAAS Engineering Desk - Log Book add-on with edit/delete support */
+ /*UAAS Engineering Desk - Log Book add-on with edit/delete support */
 (function () {
   "use strict";
 
@@ -186,6 +186,34 @@
     recordsHeader.appendChild(headerActions);
     recordsCard.appendChild(recordsHeader);
 
+    // Excel export date range. The selected REC. DATE boundaries are inclusive.
+    var exportRange = node("div", "logbook-export-range");
+    exportRange.style.display = "flex";
+    exportRange.style.alignItems = "flex-end";
+    exportRange.style.flexWrap = "wrap";
+    exportRange.style.gap = "1rem";
+    exportRange.style.margin = "1rem 0";
+    exportRange.style.padding = ".9rem";
+    exportRange.style.border = "1px solid var(--line, #263752)";
+    exportRange.style.borderRadius = "4px";
+    exportRange.style.background = "rgba(255,255,255,.02)";
+
+    var exportFromDate = addField(exportRange, "FROM DATE (REC. DATE)", "exportFromDate", "date", {});
+    var exportToDate = addField(exportRange, "TO DATE (REC. DATE)", "exportToDate", "date", {});
+    [exportFromDate, exportToDate].forEach(function (input) {
+      input.style.minWidth = "190px";
+      input.style.padding = ".7rem";
+    });
+    exportRange.querySelectorAll(".logbook-field").forEach(function (field) {
+      field.style.flex = "1 1 190px";
+      field.style.maxWidth = "260px";
+    });
+    var exportRangeHint = node("p", "logbook-message", "Excel downloads only records whose REC. DATE falls between these dates, including both selected dates.");
+    exportRangeHint.style.flex = "1 1 100%";
+    exportRangeHint.style.margin = "0";
+    exportRange.appendChild(exportRangeHint);
+    recordsCard.appendChild(exportRange);
+
     var search = node("input", "logbook-search");
     search.type = "search";
     search.placeholder = "Search customer, material, model, serial, quotation or invoice...";
@@ -358,13 +386,35 @@
         return;
       }
 
+      var fromDateValue = exportFromDate.value;
+      var toDateValue = exportToDate.value;
+      if (!fromDateValue || !toDateValue) {
+        listMessage.textContent = "Please select both From Date and To Date for the Excel export.";
+        return;
+      }
+      if (fromDateValue > toDateValue) {
+        listMessage.textContent = "From Date cannot be later than To Date.";
+        return;
+      }
+
+      // ISO yyyy-mm-dd strings sort chronologically; both endpoints are included.
+      var exportEntries = entries.filter(function (entry) {
+        var receivedDate = String(entry.rec_date || "").slice(0, 10);
+        return receivedDate && receivedDate >= fromDateValue && receivedDate <= toDateValue;
+      });
+
+      if (!exportEntries.length) {
+        listMessage.textContent = "No records found for REC. DATE from " + fromDateValue + " to " + toDateValue + ".";
+        return;
+      }
+
       exportButton.disabled = true;
       var originalText = exportButton.textContent;
       exportButton.textContent = "Preparing Excel...";
 
       loadSheetJs().then(function (XLSX) {
         var rows = [COLUMNS.map(function (column) { return column[0]; })];
-        entries.forEach(function (entry) {
+        exportEntries.forEach(function (entry) {
           rows.push(COLUMNS.map(function (column) {
             var value = entry[column[1]];
             if (column[1] === "payment_rec_amount" && value !== null && value !== undefined && value !== "") {
@@ -387,8 +437,12 @@
 
         var workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Log Book");
-        XLSX.writeFile(workbook, "UAAS_Log_Book_" + localDateValue() + ".xlsx");
-        listMessage.textContent = "Excel file downloaded with " + entries.length + " record(s).";
+        XLSX.writeFile(
+          workbook,
+          "UAAS_Log_Book_" + fromDateValue + "_to_" + toDateValue + ".xlsx"
+        );
+        listMessage.textContent = "Excel file downloaded with " + exportEntries.length +
+          " record(s) for REC. DATE from " + fromDateValue + " to " + toDateValue + ".";
       }).catch(function (error) {
         console.error("UAAS Log Book Excel export failed:", error);
         listMessage.textContent = error.message || "Could not export the Excel file.";

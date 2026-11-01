@@ -1,5 +1,4 @@
-/*
- * Ultra Automation Solutions
+/* Ultra Automation Solutions
  * Main application
  */
 
@@ -1587,6 +1586,262 @@ var uaasStaffAccessUserId = null;
 var uaasStaffAccessState = "unknown";
 var uaasStaffAccessCheckPending = false;
 
+/*
+ * Engineering Desk inactivity timeout.
+ * Staff are signed out after 30 minutes without interaction.
+ */
+var UAAS_STAFF_IDLE_TIMEOUT_MS = 10 * 60 * 1000;
+var uaasStaffIdleTimer = null;
+var uaasStaffLastActivityAt = 0;
+var uaasStaffActivityStorageKey = null;
+var uaasStaffAuthSubscription = null;
+var uaasStaffAuthInitialized = false;
+var uaasStaffLogoutInProgress = false;
+var uaasStaffLogoutNotice = "";
+
+function uaasGetStaffActivityStorageKey(session) {
+  var userId = session && session.user && session.user.id;
+  return userId ? "uaas-staff-last-activity:" + userId : null;
+}
+
+function uaasReadStaffLastActivity(key) {
+  if (!key) return 0;
+  try {
+    var value = Number(localStorage.getItem(key));
+    return Number.isFinite(value) && value > 0 ? value : 0;
+  } catch (_) {
+    return 0;
+  }
+}
+
+function uaasWriteStaffLastActivity(key, value) {
+  if (!key) return;
+  try {
+    localStorage.setItem(key, String(value));
+  } catch (_) {
+    // The timeout still works in this tab if browser storage is unavailable.
+  }
+}
+
+function uaasRemoveStaffLastActivity(key) {
+  if (!key) return;
+  try {
+    localStorage.removeItem(key);
+  } catch (_) {
+    // Ignore storage cleanup errors.
+  }
+}
+
+function uaasStopStaffIdleTimer() {
+  if (uaasStaffIdleTimer) {
+    clearTimeout(uaasStaffIdleTimer);
+    uaasStaffIdleTimer = null;
+  }
+  uaasStaffLastActivityAt = 0;
+}
+
+function uaasScheduleStaffIdleCheck() {
+  if (uaasStaffIdleTimer) {
+    clearTimeout(uaasStaffIdleTimer);
+    uaasStaffIdleTimer = null;
+  }
+
+  if (!window.sbUser || !window.sbUser.access_token || !uaasStaffLastActivityAt) {
+    return;
+  }
+
+  var elapsed = Date.now() - uaasStaffLastActivityAt;
+  var remaining = UAAS_STAFF_IDLE_TIMEOUT_MS - elapsed;
+
+  if (remaining <= 0) {
+    uaasStaffIdleTimer = setTimeout(uaasSignOutStaffForInactivity, 0);
+    return;
+  }
+
+  uaasStaffIdleTimer = setTimeout(
+    uaasSignOutStaffForInactivity,
+    remaining
+  );
+}
+
+function uaasStartStaffIdleTimer(session, freshSignIn) {
+  if (session) {
+    window.sbUser = session;
+  }
+
+  if (!window.sbUser || !window.sbUser.access_token) {
+    uaasStopStaffIdleTimer();
+    return;
+  }
+
+  var newStorageKey = uaasGetStaffActivityStorageKey(window.sbUser);
+
+  if (newStorageKey !== uaasStaffActivityStorageKey) {
+    uaasStopStaffIdleTimer();
+    uaasStaffActivityStorageKey = newStorageKey;
+  }
+
+  var now = Date.now();
+  var storedActivity = freshSignIn
+    ? 0
+    : uaasReadStaffLastActivity(uaasStaffActivityStorageKey);
+
+  uaasStaffLastActivityAt = storedActivity || now;
+
+  if (freshSignIn || !storedActivity) {
+    uaasWriteStaffLastActivity(uaasStaffActivityStorageKey, now);
+    uaasStaffLastActivityAt = now;
+  }
+
+  uaasScheduleStaffIdleCheck();
+}
+
+function uaasRecordStaffActivity() {
+  if (!window.sbUser || !window.sbUser.access_token) {
+    return;
+  }
+
+  // Check the elapsed time before extending the session.
+  if (
+    uaasStaffLastActivityAt &&
+    Date.now() - uaasStaffLastActivityAt >= UAAS_STAFF_IDLE_TIMEOUT_MS
+  ) {
+    uaasSignOutStaffForInactivity();
+    return;
+  }
+
+  uaasStaffLastActivityAt = Date.now();
+  uaasWriteStaffLastActivity(
+    uaasStaffActivityStorageKey,
+    uaasStaffLastActivityAt
+  );
+  uaasScheduleStaffIdleCheck();
+}
+
+function uaasSignOutStaffForInactivity() {
+  if (
+    uaasStaffLogoutInProgress ||
+    !window.sb ||
+    !window.sb.auth ||
+    !window.sbUser
+  ) {
+    return;
+  }
+
+  uaasStaffLogoutInProgress = true;
+  var previousStorageKey = uaasStaffActivityStorageKey;
+
+  uaasStaffLogoutNotice =
+    "You have been signed out after 30 minutes of inactivity. Please sign in again.";
+
+  window.sbUser = null;
+  uaasRemoveStaffLastActivity(previousStorageKey);
+  uaasStaffActivityStorageKey = null;
+  uaasStopStaffIdleTimer();
+
+  // Local scope clears this browser's session without signing staff out on
+  // their other devices.
+  Promise.resolve(
+    window.sb.auth.signOut({ scope: "local" })
+  )
+    .catch(function (error) {
+      console.error("Engineering Desk automatic sign-out failed:", error);
+    })
+    .then(function () {
+      uaasStaffLogoutInProgress = false;
+
+      if (location.hash.slice(1) === "team") {
+        dash();
+      }
+    });
+}
+
+function uaasInitializeStaffSessionHandling() {
+  if (
+    uaasStaffAuthInitialized ||
+    !window.sb ||
+    !window.sb.auth ||
+    typeof window.sb.auth.onAuthStateChange !== "function"
+  ) {
+    return;
+  }
+
+  uaasStaffAuthInitialized = true;
+
+  var authResult = window.sb.auth.onAuthStateChange(function (event, session) {
+    if (session && session.access_token) {
+      window.sbUser = session;
+
+      if (event === "SIGNED_IN") {
+        uaasStaffLogoutNotice = "";
+        uaasStartStaffIdleTimer(session, true);
+      } else if (event === "INITIAL_SESSION") {
+        uaasStartStaffIdleTimer(session, false);
+      }
+      // Token refreshes must not count as user activity.
+      return;
+    }
+
+    if (event === "SIGNED_OUT") {
+      var oldStorageKey = uaasStaffActivityStorageKey;
+      window.sbUser = null;
+      uaasRemoveStaffLastActivity(oldStorageKey);
+      uaasStaffActivityStorageKey = null;
+      uaasStopStaffIdleTimer();
+
+      if (!uaasStaffLogoutInProgress && location.hash.slice(1) === "team") {
+        uaasStaffLogoutNotice =
+          "Your Engineering Desk session has ended. Please sign in again.";
+        setTimeout(function () {
+          if (location.hash.slice(1) === "team") dash();
+        }, 0);
+      }
+    }
+  });
+
+  if (authResult && authResult.data) {
+    uaasStaffAuthSubscription = authResult.data.subscription || null;
+  }
+}
+
+// Any meaningful interaction resets the 30-minute inactivity countdown.
+["pointerdown", "keydown", "click", "input", "touchstart", "scroll", "wheel"].forEach(
+  function (eventName) {
+    document.addEventListener(eventName, uaasRecordStaffActivity, { passive: true });
+  }
+);
+
+// Browser timers may be throttled in background tabs, so check elapsed time
+// again when the employee returns to the page.
+document.addEventListener("visibilitychange", function () {
+  if (!document.hidden && window.sbUser && window.sbUser.access_token) {
+    if (
+      uaasStaffLastActivityAt &&
+      Date.now() - uaasStaffLastActivityAt >= UAAS_STAFF_IDLE_TIMEOUT_MS
+    ) {
+      uaasSignOutStaffForInactivity();
+    } else {
+      uaasScheduleStaffIdleCheck();
+    }
+  }
+});
+
+// Keep other open tabs in sync with the same staff account's last activity.
+window.addEventListener("storage", function (event) {
+  if (
+    event.key &&
+    event.key === uaasStaffActivityStorageKey &&
+    event.newValue &&
+    window.sbUser
+  ) {
+    var sharedActivity = Number(event.newValue);
+    if (Number.isFinite(sharedActivity) && sharedActivity > uaasStaffLastActivityAt) {
+      uaasStaffLastActivityAt = sharedActivity;
+      uaasScheduleStaffIdleCheck();
+    }
+  }
+});
+
 
 function dash() {
 
@@ -1702,6 +1957,8 @@ function dash() {
           window.sbUser =
             response.data.session;
 
+          uaasStaffLogoutNotice = "";
+          uaasStartStaffIdleTimer(window.sbUser, true);
 
           dash();
 
@@ -1723,13 +1980,17 @@ function dash() {
     };
 
 
+    if (uaasStaffLogoutNotice) {
+      error.textContent = uaasStaffLogoutNotice;
+      uaasStaffLogoutNotice = "";
+    }
+
     form.append(
       email,
       password,
       loginButton,
       error
     );
-
 
     D.appendChild(form);
 
@@ -2106,6 +2367,8 @@ function dash() {
 /* =========================================================
    INITIAL PAGE
 ========================================================= */
+
+uaasInitializeStaffSessionHandling();
 
 show();
     
