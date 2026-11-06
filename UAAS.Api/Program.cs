@@ -9,16 +9,23 @@ builder.Services.AddHttpClient("Supabase", client =>
     client.Timeout = TimeSpan.FromSeconds(15);
 });
 
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("UaasFrontend", policy =>
-       policy.WithOrigins(
-    "http://127.0.0.1:5500",
-    "http://localhost:5500",
-    "https://uaas-website.onrender.com")
-  .AllowAnyHeader()
-  .AllowAnyMethod());
+    {
+        policy.WithOrigins(
+            "http://127.0.0.1:5500",
+            "http://localhost:5500",
+            "https://uaas-website.onrender.com",
+            "https://uaas.co.in",
+            "https://www.uaas.co.in"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
 });
+
 
 var app = builder.Build();
 
