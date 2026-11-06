@@ -1,0 +1,915 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@inject Microsoft.JSInterop.IJSRuntime JS
+
+<div class="uaas-home">
+
+    <!-- HERO -->
+    <section class="hero">
+
+        <h1>Ultra Automation Solutions</h1>
+
+        <h2>Industrial Automation Repair & Solutions</h2>
+
+        <p>
+            VFD, Servo Drive, PLC, HMI, Robot Controller Repair,
+            Retrofit Projects and Industrial Spares.
+        </p>
+
+        <div class="buttons">
+
+            <button type="button" @onclick="GoToServices">
+                Our Services
+            </button>
+
+            <button type="button" @onclick="GoToContact">
+                Request Service
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- SERVICES -->
+    <section id="services" class="section">
+
+        <h2>Our Services</h2>
+
+        <div class="cards">
+
+            <!-- VFD -->
+            <button class="card service-card"
+                    @onclick='() => ShowCompanies("VFD")'>
+
+                <h3>VFD / AC Drive Repair</h3>
+
+                <p>
+                    Industrial VFD and AC drive diagnosis,
+                    component-level repair and testing.
+                </p>
+
+            </button>
+
+
+            <!-- SERVO -->
+            <button class="card service-card"
+                    @onclick='() => ShowCompanies("SERVO")'>
+
+                <h3>Servo Drive & Motor Repair</h3>
+
+                <p>
+                    Servo drive and servo motor repair,
+                    testing and replacement solutions.
+                </p>
+
+            </button>
+
+
+            <!-- PLC -->
+            <button class="card service-card"
+                    @onclick='() => ShowCompanies("PLC")'>
+
+                <h3>PLC & HMI Repair</h3>
+
+                <p>
+                    PLC, HMI and industrial control system
+                    repair and troubleshooting.
+                </p>
+
+            </button>
+
+
+            <!-- RETROFIT -->
+            <button class="card service-card"
+                    @onclick='() => ShowCompanies("RETROFIT")'>
+
+                <h3>Retrofit Solutions</h3>
+
+                <p>
+                    Industrial automation retrofit and
+                    control system conversion.
+                </p>
+
+            </button>
+
+
+            <!-- SPARES -->
+            <button class="card service-card"
+                    @onclick='() => ShowCompanies("SPARES")'>
+
+                <h3>Industrial Spares</h3>
+
+                <p>
+                    Industrial fans, cables, resolvers and
+                    automation components.
+                </p>
+
+            </button>
+
+
+            <!-- DOTNET -->
+            <button class="card service-card"
+                    @onclick='() => ShowCompanies("DOTNET")'>
+
+                <h3>.NET Programming</h3>
+
+                <p>
+                    Custom industrial software and
+                    automation applications using .NET.
+                </p>
+
+            </button>
+
+        </div>
+
+
+        <!-- COMPANY LIST -->
+        @if (!string.IsNullOrEmpty(SelectedService))
+        {
+            <div class="company-panel">
+
+                <h2>@SelectedService Companies</h2>
+
+                <div class="company-list">
+
+                    @foreach (var company in Companies)
+                    {
+                        <button type="button"
+                                class="company-button"
+                                @onclick="() => ShowCompanyImage(company)">
+
+                            @company.Name
+
+                        </button>
+                    }
+
+                </div>
+
+            </div>
+        }
+
+
+        <!-- COMPANY IMAGE -->
+        @if (SelectedCompany != null)
+{
+    <div class="company-image-panel">
+
+        <h2>@SelectedCompany.Name</h2>
+
+        <img src="@SelectedCompany.Image"
+             alt="@SelectedCompany.Name"
+             class="company-image"
+             onerror="this.style.display='none';" />
+
+    </div>
+}
+    </section>
+
+
+    <!-- WHY CHOOSE US -->
+    <section class="section">
+
+        <h2>Why Choose Us?</h2>
+
+        <div class="stats">
+
+            <div>
+                <strong>35+</strong>
+                <span>Brands Supported</span>
+            </div>
+
+            <div>
+                <strong>3</strong>
+                <span>Branches</span>
+            </div>
+
+            <div>
+                <strong>20+</strong>
+                <span>Repair Categories</span>
+            </div>
+
+            <div>
+                <strong>6</strong>
+                <span>Working Days</span>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- CONTACT / SERVICE REQUEST -->
+    <section id="contact" class="contact">
+
+        <h2>Need Industrial Automation Service?</h2>
+
+        <p>
+            Contact Ultra Automation Solutions for repair,
+            retrofit and automation requirements.
+        </p>
+
+        <div class="service-form">
+
+            <input @bind="ServiceName"
+                   type="text"
+                   placeholder="Your Name" />
+
+            <input @bind="CompanyName"
+                   type="text"
+                   placeholder="Company Name" />
+
+            <input @bind="Phone"
+                   type="tel"
+                   placeholder="Phone Number" />
+
+            <input @bind="Email"
+                   type="email"
+                   placeholder="Email Address" />
+
+            <select @bind="ServiceType">
+
+                <option value="">
+                    Select Service
+                </option>
+
+                <option value="VFD / AC Drive Repair">
+                    VFD / AC Drive Repair
+                </option>
+
+                <option value="Servo Drive & Motor Repair">
+                    Servo Drive & Motor Repair
+                </option>
+
+                <option value="PLC & HMI Repair">
+                    PLC & HMI Repair
+                </option>
+
+                <option value="Retrofit Solutions">
+                    Retrofit Solutions
+                </option>
+
+                <option value="Industrial Spares">
+                    Industrial Spares
+                </option>
+
+                <option value=".NET Programming">
+                    .NET Programming
+                </option>
+
+            </select>
+
+            <textarea @bind="Description"
+                      rows="5"
+                      placeholder="Describe your requirement">
+            </textarea>
+
+            <button type="button"
+                    class="submit-button"
+                    @onclick="SubmitServiceRequest">
+
+                Submit Service Request
+
+            </button>
+
+            @if (!string.IsNullOrEmpty(FormMessage))
+            {
+                <p class="message">
+                    @FormMessage
+                </p>
+            }
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<style>
+
+    * {
+        box-sizing: border-box;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    .uaas-home {
+        font-family: Arial, sans-serif;
+        width: 100%;
+    }
+
+
+    /* HERO */
+
+    .hero {
+        padding: 80px 30px;
+        text-align: center;
+        background: linear-gradient(135deg, #111827, #1e3a8a);
+        color: white;
+    }
+
+    .hero h1 {
+        font-size: 45px;
+        margin-bottom: 10px;
+    }
+
+    .hero h2 {
+        font-size: 28px;
+        margin-bottom: 20px;
+    }
+
+    .hero p {
+        max-width: 750px;
+        margin: 20px auto;
+        font-size: 18px;
+        line-height: 1.6;
+    }
+
+
+    /* HERO BUTTONS */
+
+    .buttons {
+        margin-top: 30px;
+    }
+
+    .buttons button {
+        display: inline-block;
+        margin: 8px;
+        padding: 13px 25px;
+        border: none;
+        border-radius: 6px;
+        background: white;
+        color: #1e3a8a;
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .buttons button:hover {
+        transform: translateY(-2px);
+        background: #dbeafe;
+    }
+
+
+    /* SECTIONS */
+
+    .section {
+        padding: 60px 30px;
+        text-align: center;
+    }
+
+    .section h2 {
+        font-size: 32px;
+        margin-bottom: 30px;
+    }
+
+
+    /* SERVICE CARDS */
+
+    .cards {
+        display: grid;
+        grid-template-columns:
+            repeat(auto-fit, minmax(250px, 1fr));
+
+        gap: 20px;
+        max-width: 1100px;
+        margin: auto;
+    }
+
+    .card {
+        padding: 25px;
+        border-radius: 10px;
+        background: #f3f4f6;
+        box-shadow:
+            0 3px 10px rgba(0, 0, 0, 0.12);
+
+        transition: 0.2s;
+        border: 1px solid #e5e7eb;
+        cursor: pointer;
+        text-align: center;
+    }
+
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow:
+            0 8px 20px rgba(0, 0, 0, 0.16);
+    }
+
+    .card h3 {
+        color: #1e3a8a;
+    }
+
+    .card p {
+        line-height: 1.6;
+        color: #111827;
+    }
+
+
+    /* COMPANY PANEL */
+
+    .company-panel {
+        max-width: 1100px;
+        margin: 50px auto 0;
+        padding: 35px;
+        background: #f8fafc;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .company-panel h2 {
+        color: #1e3a8a;
+        margin-bottom: 25px;
+    }
+
+    .company-list {
+        display: grid;
+        grid-template-columns:
+            repeat(auto-fit, minmax(180px, 1fr));
+
+        gap: 15px;
+    }
+
+    .company-button {
+        padding: 15px 20px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: white;
+        color: #1e3a8a;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .company-button:hover {
+        background: #1e3a8a;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+
+    /* COMPANY IMAGE */
+
+    .company-image-panel {
+        max-width: 800px;
+        margin: 35px auto 0;
+        padding: 30px;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow:
+            0 5px 20px rgba(0, 0, 0, 0.10);
+    }
+
+    .company-image-panel h2 {
+        color: #1e3a8a;
+        margin-bottom: 20px;
+    }
+
+    .company-image {
+        display: block;
+        width: 100%;
+        max-width: 600px;
+        max-height: 400px;
+        object-fit: contain;
+        margin: auto;
+        border-radius: 10px;
+    }
+
+
+    /* STATS */
+
+    .stats {
+        display: grid;
+        grid-template-columns:
+            repeat(auto-fit, minmax(180px, 1fr));
+
+        gap: 20px;
+        max-width: 900px;
+        margin: auto;
+    }
+
+    .stats div {
+        padding: 25px;
+        background: #eef2ff;
+        border-radius: 10px;
+    }
+
+    .stats strong {
+        display: block;
+        font-size: 35px;
+        color: #1e3a8a;
+    }
+
+    .stats span {
+        display: block;
+        margin-top: 8px;
+    }
+
+
+    /* CONTACT */
+
+    .contact {
+        padding: 70px 30px;
+        text-align: center;
+        background: #111827;
+        color: white;
+        scroll-margin-top: 20px;
+    }
+
+    .contact h2 {
+        font-size: 32px;
+        margin-bottom: 15px;
+    }
+
+    .contact > p {
+        margin-bottom: 30px;
+    }
+
+
+    /* FORM */
+
+    .service-form {
+        max-width: 650px;
+        margin: 30px auto 0;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .service-form input,
+    .service-form select,
+    .service-form textarea {
+        width: 100%;
+        padding: 13px 15px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 16px;
+        font-family: Arial, sans-serif;
+        background: white;
+        color: #111827;
+    }
+
+    .service-form textarea {
+        resize: vertical;
+    }
+
+
+    /* SUBMIT BUTTON */
+
+    .submit-button {
+        padding: 14px 25px;
+        border: none;
+        border-radius: 6px;
+        background: #2563eb;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 5px;
+    }
+
+    .submit-button:hover {
+        background: #1d4ed8;
+    }
+
+
+    /* MESSAGE */
+
+    .message {
+        margin-top: 15px;
+        padding: 12px;
+        border-radius: 6px;
+        background: #1e3a8a;
+        color: #dbeafe;
+        font-weight: bold;
+    }
+
+
+    /* MOBILE */
+
+    @@media (max-width: 600px) {
+
+        .hero {
+            padding: 60px 20px;
+        }
+
+        .hero h1 {
+            font-size: 32px;
+        }
+
+        .hero h2 {
+            font-size: 22px;
+        }
+
+        .hero p {
+            font-size: 16px;
+        }
+
+        .section {
+            padding: 45px 20px;
+        }
+
+        .contact {
+            padding: 50px 20px;
+        }
+
+        .company-panel {
+            padding: 20px;
+        }
+
+        .company-image-panel {
+            padding: 20px;
+        }
+
+    }
+
+</style>
+
+
+@code {
+
+    /* =========================
+       HERO NAVIGATION
+       ========================= */
+
+    private async Task GoToServices()
+    {
+        await JS.InvokeVoidAsync(
+            "eval",
+            "document.getElementById('services')?.scrollIntoView({behavior:'smooth'});"
+        );
+    }
+
+    private async Task GoToContact()
+    {
+        await JS.InvokeVoidAsync(
+            "eval",
+            "document.getElementById('contact')?.scrollIntoView({behavior:'smooth'});"
+        );
+    }
+
+
+    /* =========================
+       COMPANY / SERVICE
+       ========================= */
+
+    private string SelectedService = "";
+
+    private CompanyItem? SelectedCompany = null;
+
+    private string SelectedCompanyImage = "";
+
+    private List<CompanyItem> Companies = new();
+
+
+    private void ShowCompanies(string service)
+    {
+        SelectedService = service;
+
+        SelectedCompany = null;
+
+        SelectedCompanyImage = "";
+
+        Companies = service switch
+        {
+
+            /* =========================
+               VFD
+               ========================= */
+
+            "VFD" => new List<CompanyItem>
+            {
+                new("ABB", "/images/vfd/abb.jpg.png"),
+                new("Baumuller", "/images/vfd/baumuller.jpg"),
+                new("Bosch Rexroth", "/images/vfd/bosch-rexroth.jpg"),
+                new("Chinese Drives", "/images/vfd/chinese-drives.jpg"),
+                new("Danfoss", "/images/vfd/danfoss.jpg"),
+                new("Delta", "/images/vfd/delta.jpg"),
+                new("Fuji", "/images/vfd/fuji.jpg"),
+                new("GEFRAN", "/images/vfd/gefran.jpg"),
+                new("Inovance", "/images/vfd/inovance.jpg"),
+                new("INVT", "/images/vfd/invt.jpg"),
+                new("KEB", "/images/vfd/keb.jpg"),
+                new("L&T", "/images/vfd/lt.jpg"),
+                new("MOOG", "/images/vfd/moog.jpg"),
+                new("NIDEC", "/images/vfd/nidec.png"),
+                new("Phase Motors", "/images/vfd/phase-motors.jpg"),
+                new("Schneider", "/images/vfd/schneider.jpg"),
+                new("Siemens", "/images/vfd/siemens.jpg"),
+                new("Techmation", "/images/vfd/techmation.jpg"),
+                new("Toshiba", "/images/vfd/toshiba.jpg"),
+                new("Yaskawa", "/images/vfd/yaskawa.jpg")
+            },
+
+
+            /* =========================
+               SERVO
+               ========================= */
+
+            "SERVO" => new List<CompanyItem>
+            {
+                new("ABB", "/images/servo/abb.jpg"),
+                new("Baumuller", "/images/servo/baumuller.jpg"),
+                new("Bosch Rexroth", "/images/servo/bosch-rexroth.jpg"),
+                new("Chinese Drives", "/images/servo/chinese-drives.jpg"),
+                new("Danfoss", "/images/servo/danfoss.jpg"),
+                new("Delta", "/images/servo/delta.jpg"),
+                new("Fuji", "/images/servo/fuji.jpg"),
+                new("GEFRAN", "/images/servo/gefran.jpg"),
+                new("Inovance", "/images/servo/inovance.jpg"),
+                new("INVT", "/images/servo/invt.jpg"),
+                new("KEB", "/images/servo/keb.jpg"),
+                new("L&T", "/images/servo/lt.jpg"),
+                new("Mitsubishi", "/images/servo/mitsubishi.png"),
+                new("MOOG", "/images/servo/moog.jpg"),
+                new("NIDEC", "/images/servo/nidec.jpg"),
+                new("Panasonic", "/images/servo/panasonic.jpg"),
+                new("Phase Motors", "/images/servo/phase-motors.jpg"),
+                new("Schneider", "/images/servo/schneider.jpg"),
+                new("Siemens", "/images/servo/siemens.jpg"),
+                new("THM", "/images/servo/thm.jpg"),
+                new("Yaskawa", "/images/servo/yaskawa.jpg")
+            },
+
+
+            /* =========================
+               PLC
+               ========================= */
+
+            "PLC" => new List<CompanyItem>
+            {
+                new("Bosch Rexroth", "/images/plc/br.jpg"),
+                new("Inovance", "/images/plc/inovance.jpg"),
+                new("Mitsubishi", "/images/plc/mitsubishi.jpg"),
+                new("Schneider", "/images/plc/schneider.jpg"),
+                new("Siemens", "/images/plc/siemens.jpg")
+            },
+
+
+            /* =========================
+               RETROFIT
+               ========================= */
+
+            "RETROFIT" => new List<CompanyItem>
+            {
+                new(
+                    "Non Servo to Servo",
+                    "/images/retrofit/non-servo-to-servo.jpg"
+                ),
+
+                new(
+                    "PLC Conversion",
+                    "/images/retrofit/plc-conversion.jpg"
+                ),
+
+                new(
+                    "PLC & HMI",
+                    "/images/retrofit/plc-hmi.jpg"
+                ),
+
+                new(
+                    "Servo Drive & Motor",
+                    "/images/retrofit/servo-drive-motor.jpg"
+                ),
+
+                new(
+                    "VFD / AC Drive",
+                    "/images/retrofit/vfd-ac-drive.jpg"
+                )
+            },
+
+
+            /* =========================
+               SPARES
+               ========================= */
+
+            "SPARES" => new List<CompanyItem>
+            {
+                new("AC Fans", "/images/spares/ac-fans.jpg"),
+                new("Cables", "/images/spares/cables.jpg"),
+                new("DC Fans", "/images/spares/dc-fans.jpg"),
+                new("Industrial Fans", "/images/spares/industrial-fans.jpg"),
+                new("Resolver", "/images/spares/resolver.jpg")
+            },
+
+
+            /* =========================
+               .NET
+               ========================= */
+
+            "DOTNET" => new List<CompanyItem>
+            {
+                new(".NET Programming", "")
+            },
+
+
+            _ => new List<CompanyItem>()
+
+        };
+    }
+
+
+    /* =========================
+       COMPANY IMAGE
+       ========================= */
+
+    private void ShowCompanyImage(CompanyItem company)
+    {
+        SelectedCompany = company;
+
+        SelectedCompanyImage = company.Image;
+    }
+
+
+    /* =========================
+       SERVICE REQUEST FORM
+       ========================= */
+
+    private string ServiceName = "";
+
+    private string CompanyName = "";
+
+    private string Phone = "";
+
+    private string Email = "";
+
+    private string ServiceType = "";
+
+    private string Description = "";
+
+    private string FormMessage = "";
+
+
+    private async Task SubmitServiceRequest()
+    {
+        FormMessage = "";
+
+        if (string.IsNullOrWhiteSpace(ServiceName))
+        {
+            FormMessage = "Please enter your name.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Phone))
+        {
+            FormMessage = "Please enter your phone number.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(ServiceType))
+        {
+            FormMessage = "Please select a service.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Description))
+        {
+            FormMessage = "Please describe your requirement.";
+            return;
+        }
+
+
+        /*
+         * Form validation is working here.
+         *
+         * We will connect this section to your
+         * existing Supabase database separately.
+         */
+
+        FormMessage =
+            "Your service request has been received. Our team will contact you.";
+
+
+        ServiceName = "";
+        CompanyName = "";
+        Phone = "";
+        Email = "";
+        ServiceType = "";
+        Description = "";
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+    /* =========================
+       COMPANY MODEL
+       ========================= */
+
+    private class CompanyItem
+{
+    public string Name { get; set; }="";
+    public string Image { get; set; }="";
+
+    public CompanyItem(string name, string image)
+    {
+        Name = name;
+        Image = image;
+    }
+}
+
+}
